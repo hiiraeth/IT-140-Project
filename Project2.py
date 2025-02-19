@@ -1,5 +1,45 @@
+#TODO: finish inventory system
+#TODO: implement item collection feature: actually collecting items, 
+#      removing item from room after collection, updating inventory
+#TODO: update intro to include the list of items (or output them somewhere)
+#TODO: add win-check to main game loop (need the 6 required items)
+#TODO: add option for user to exit game
+#TODO: clean up comments, update and add them as needed
+
 import time as t
 import keyboard as kb
+
+class Room:
+    def __init__(self, name, directions, items=None):
+        self.name = name
+        self.directions = directions or {}
+        self.items = items or []
+
+    def remove_item(self, item):
+        if item in self.item:
+            self.items.remove(item)
+
+# dictionary of all the rooms and their instances
+rooms = {
+    'CEO Suite': Room('CEO Suite', {'South': 'Technology Lab','East': 'Library'}),
+    'Lobby': Room('Lobby', {'North': 'Conference Room', 'East': 'Break Room', 'West': 'Operations'}),
+    'Utility Closet': Room('Utility Closet', {'North': 'Technology Lab'}),
+    'Library': Room('Library', {'South': 'Conference Room', 'East': 'CFO Suite', 'West': 'CEO Suite'}, 
+                    ['MANIFESTO']),
+    'CFO Suite': Room('CFO Suite', {'South': 'Break Room', 'West': 'Library'},
+                      ['FINANCE_REPORTS']),
+    'Break Room': Room('Break Room', {'North': 'CFO Suite', 'West': 'Lobby'},
+                       ['DR. PEPPER']),
+    'Conference Room': Room('Conference Room', {'North': 'Library', 'South': 'Lobby', 'West': 'Technology Lab'},
+                            ['ROLODEX']),
+    'Operations': Room('Operations', {'South': 'Security', 'East': 'Lobby', 'West': 'Technology Lab'},
+                       ['KEY_CARD']),
+    'Security': Room('Security', {'North': 'Operations'},
+                     ['BLUEPRINTS']),
+    'Technology Lab': Room('Technology Lab', {'North': 'CEO Suite', 'Northeast': 'Conference Room', 
+                            'Southeast': 'Operations', 'South': 'Utility Closet'},
+                            ['MITM'])
+}
 
 # displays intro message to user. can be skipped by pressing space bar.
 def intro_to_game(): 
@@ -42,23 +82,23 @@ def show_items(items):
     for item in items:
         print(f'|-- {item}')
 
-# displays info about room user is currently in to user, asks what direction they want to move
+# displays info about room user is currently in to user, such as connections to other rooms
 def room_information(current_room):
-    i = 1 # counter for loop                 # holds all adjacent rooms to current room
-    directions = rooms[current_room].items() # and valid movement directions 
+    i = 1 # counter for loop, numbers the list of rooms                 
 
-    if current_room != 'Operations':
-        print(f'| You are currently in the {current_room}. The adjacent rooms are:')
+    if current_room.name != 'Operations':
+        print(f'| You are currently in the {current_room.name}. The adjacent rooms are:')
     else: 
-        print(f'| You are currently in {current_room}. The adjacent rooms are:')
+        print(f'| You are currently in {current_room.name}. The adjacent rooms are:')
 
-    for direction, room in directions: # iterates thru all valid directions to display to user
-        print(f'|-- {i}) {room:<15} | {direction:>5}')
+    for direction, room in current_room.directions.items(): # iterates thru all the valid 
+        print(f'|-- {i}) {room:<15} | {direction:>5}')      # directions and displays to user
         i += 1
 
 def player_choice():
     while True:
-        choice = str(input('\n| What would you like to do? Enter \'M\' to move rooms or \'I\' to pick up items: ').strip().lower())
+        choice = str(input('\n| What would you like to do? Enter \'M\' to move rooms or '
+                           '\'I\' to pick up items: ').strip().lower())
 
         if (choice == 'm') or (choice == 'i'):
             return choice
@@ -74,8 +114,8 @@ def move_action(current_room):
         print('\n| Please make your selection by typing the direction:', end=' ')
         direction = str(input().strip().capitalize())
 
-        if direction in rooms[current_room]:
-            new_room = rooms[current_room][direction]
+        if direction in current_room.directions:
+            new_room = current_room.directions[direction]
             if new_room not in rooms:
                 print('Uh oh, that room does not exist.')
                 continue
@@ -84,16 +124,12 @@ def move_action(current_room):
             print(f'\n{direction} is not a valid direction. Please try again.')
             t.sleep(1)
             continue
-
-    if new_room not in rooms:
-        print('Uh oh, that room does not exist.')
     
     print(f'\nHeading to {new_room}...')
     print('-------------------------------------------------------------------\n')
     t.sleep(2)
 
-    return new_room
-
+    return rooms[new_room]
 
 # displays game over sequence
 def game_over():
@@ -123,74 +159,30 @@ def play_again():
         print('\nThanks for playing this abridged version of the game! :)')
         quit()
 
+#FIXME: implement 
 def add_item(item):
-    print('hi')
-
-# dictionary of all the rooms and their valid directions
-rooms = {
-    'CEO Suite': 
-        {'South': 'Technology Lab',
-         'East': 'Library'},
-    'Library': 
-        {'South': 'Conference Room',
-         'East': 'CFO Suite',
-         'West': 'CEO Suite'},
-    'CFO Suite': 
-        {'South': 'Break Room',
-         'West': 'Library'},
-    'Break Room':
-        {'North': 'CFO Suite',
-         'West': 'Lobby'},
-    'Lobby': 
-        {'North': 'Conference Room', 
-         'East': 'Break Room', 
-         'West': 'Operations'},
-    'Conference Room': 
-        {'North': 'Library',
-         'South': 'Lobby',
-         'West': 'Technology Lab'},
-    'Technology Lab': 
-        {'North': 'CEO Suite',
-         'Northeast': 'Conference Room',
-         'Southeast': 'Operations', 
-         'South': 'Utility Closet'},
-    'Utility Closet':
-        {'North': 'Technology Lab'},
-    'Operations':
-        {'South': 'Security',
-         'East': 'Lobby',
-         'West': 'Technology Lab'},
-    'Security':
-        {'North': 'Operations'}
-}
-
-items = {
-    'ACCESS_CARD',
-    'ROLODEX',
-    'MITM',
-    'MANIFESTO',
-    'FINANCES',
-    'BLUEPRINTS',
-}
+    pass
 
 # main game function:
-# - will display room information
-# - moves user based on user input
-# - decides if game is won or lost
-# - checks for villain
+# -- will display room information
+# -- moves user based on user input
+# -- decides if game is won or lost
+# -- checks for villain
 def main():
     # initializing variables
-    current_room = 'Lobby'
+    current_room = rooms['Lobby']
     inventory = []
 
-    intro_to_game() # outputs intro to user
+    #intro_to_game() # outputs intro to user
 
-    # main loop, will execute infinitely until user exits, loses, or wins (to be added)
+    # main loop, will execute infinitely until user exits, loses, or wins
     while True:
         if current_room == 'CEO Suite': # checks if user is in room w/ villain
             game_over()
             play_again()
             continue
+        
+        #FIXME: add win check system
 
         room_information(current_room)
         t.sleep(1)
@@ -202,7 +194,9 @@ def main():
 
         if choice == 'm':
             current_room = move_action(current_room)
-
+        else:
+            #FIXME: item collection feature to go here
+            pass
 
 if __name__ == '__main__':
     main()
