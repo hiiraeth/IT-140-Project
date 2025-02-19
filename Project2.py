@@ -34,6 +34,14 @@ def intro_to_game():
     print('Welcome to the game! You are starting off in the lobby.\n')
     t.sleep(2)
 
+def show_items(items):
+    print('\n| Your current items are:')
+    if not items:
+        print('|-- Your inventory is empty.')
+
+    for item in items:
+        print(f'|-- {item}')
+
 # displays info about room user is currently in to user, asks what direction they want to move
 def room_information(current_room):
     i = 1 # counter for loop                 # holds all adjacent rooms to current room
@@ -47,11 +55,45 @@ def room_information(current_room):
     for direction, room in directions: # iterates thru all valid directions to display to user
         print(f'|-- {i}) {room:<15} | {direction:>5}')
         i += 1
-    
-    print('| Please make your selection by typing the direction. Type \'Exit\' to quit:', end=' ')
-    direction = str(input().strip().capitalize())
 
-    return direction
+def player_choice():
+    while True:
+        choice = str(input('\n| What would you like to do? Enter \'M\' to move rooms or \'I\' to pick up items: ').strip().lower())
+
+        if (choice == 'm') or (choice == 'i'):
+            return choice
+        else:
+            print('Please enter a valid command.')
+            continue
+
+def move_action(current_room):
+    print('You chose to move rooms.')
+    t.sleep(1.5)
+
+    while True:
+        print('\n| Please make your selection by typing the direction:', end=' ')
+        direction = str(input().strip().capitalize())
+
+        if direction in rooms[current_room]:
+            new_room = rooms[current_room][direction]
+            if new_room not in rooms:
+                print('Uh oh, that room does not exist.')
+                continue
+            break
+        else:
+            print(f'\n{direction} is not a valid direction. Please try again.')
+            t.sleep(1)
+            continue
+
+    if new_room not in rooms:
+        print('Uh oh, that room does not exist.')
+    
+    print(f'\nHeading to {new_room}...')
+    print('-------------------------------------------------------------------\n')
+    t.sleep(2)
+
+    return new_room
+
 
 # displays game over sequence
 def game_over():
@@ -71,29 +113,18 @@ def game_over():
     print('Goodbye.\n')
     t.sleep(3)
 
-# makes sure room is valid, and returns that room.
-# room will update for player once main loop repeats
-def update_room(current_room, new_room):
-    if new_room not in rooms:
-        print('Uh oh, that room does not exist.')
-    
-    current_room = new_room
-    print(f'\nHeading to {new_room}...\n')
-    t.sleep(2)
-
-    return current_room
-
 # asks user if they want to play again
 def play_again():
     answer = input('Play again? Y/N: ').strip().lower()
 
     if answer == 'y': # restarts from the intro
-        current_room = 'Lobby'
-        direction = None
         intro_to_game()
     else:
         print('\nThanks for playing this abridged version of the game! :)')
         quit()
+
+def add_item(item):
+    print('hi')
 
 # dictionary of all the rooms and their valid directions
 rooms = {
@@ -133,15 +164,24 @@ rooms = {
         {'North': 'Operations'}
 }
 
+items = {
+    'ACCESS_CARD',
+    'ROLODEX',
+    'MITM',
+    'MANIFESTO',
+    'FINANCES',
+    'BLUEPRINTS',
+}
+
 # main game function:
 # - will display room information
 # - moves user based on user input
 # - decides if game is won or lost
 # - checks for villain
 def main():
-    # initalizing variables
+    # initializing variables
     current_room = 'Lobby'
-    direction = None
+    inventory = []
 
     intro_to_game() # outputs intro to user
 
@@ -152,20 +192,17 @@ def main():
             play_again()
             continue
 
-        direction = room_information(current_room)
-        
-        # branching to check user input, proceeds accordingly
-        if direction in rooms[current_room]:
-            next_room = rooms[current_room][direction]
-        elif direction == 'Exit':
-            play_again()
-            continue
-        else:
-            print(f'\n{direction} is not a valid direction. Please try again.\n')
-            t.sleep(1)
-            continue
+        room_information(current_room)
+        t.sleep(1)
 
-        current_room = update_room(current_room, next_room)
+        show_items(inventory)
+        t.sleep(1)
+
+        choice = player_choice()
+
+        if choice == 'm':
+            current_room = move_action(current_room)
+
 
 if __name__ == '__main__':
     main()
