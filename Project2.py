@@ -155,9 +155,12 @@ def play_again():
 
     if answer == 'y': # restarts from the intro
         intro_to_game()
+        #FIXME: reset inventory and items once implemented
     else:
         print('\nThanks for playing this abridged version of the game! :)')
         quit()
+
+    return rooms['Lobby']
 
 #FIXME: implement 
 def add_item(item):
@@ -177,9 +180,9 @@ def main():
 
     # main loop, will execute infinitely until user exits, loses, or wins
     while True:
-        if current_room == 'CEO Suite': # checks if user is in room w/ villain
+        if current_room == rooms['CEO Suite']: # checks if user is in room w/ villain
             game_over()
-            play_again()
+            current_room = play_again()
             continue
         
         #FIXME: add win check system
