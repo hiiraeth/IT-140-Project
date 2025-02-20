@@ -1,20 +1,16 @@
-#TODO: finish inventory system
-#TODO: implement item collection feature: actually collecting items, 
-#      removing item from room after collection, updating inventory
-#TODO: update intro to include the list of items (or output them somewhere)
-#TODO: add win-check to main game loop (need the 6 required items)
-#TODO: add option for user to exit game
 #TODO: clean up comments, update and add them as needed
 
 import time as t
 import keyboard as kb
 
+# defines a class for each room
 class Room:
     def __init__(self, name, directions, items=None):
         self.name = name
         self.directions = directions or {}
         self.items = items or None
 
+    # allows items to be removed from room, used when items get picked up
     def remove_item(self, item):
         if item in self.items:
             self.items.remove(item)
@@ -72,9 +68,8 @@ def intro_to_game():
 
     t.sleep(2)
 
-def instructions():
-    item_list = ('BLUEPRINTS', 'MANIFESTO', 'MITM', 'FINANCE REPORTS', 'ROLODEX', 'KEY CARD')
-
+# displays how to play the game
+def instructions(list):
     print('| Welcome to the game! Before you begin, here are the instructions:')
     t.sleep(1.5)
 
@@ -87,7 +82,7 @@ def instructions():
 
     print('| You win the game by collecting all six items, which are:')
     
-    for item in item_list:
+    for item in list:
         print(f'|-- {item}')
     t.sleep(4)
 
@@ -108,12 +103,13 @@ def instructions():
         print('-------------------------------------------------------------------\n')
         t.sleep(2)
 
-
+# displays users inventory
 def show_items(items):
-    print('\n| Your current items are:')
     if not items:
-        print('|-- Your inventory is empty.')
+        print('| Your inventory is empty.')
+        return
 
+    print('\n| Your current items are:')
     for item in items:
         print(f'|-- {item}')
 
@@ -135,6 +131,7 @@ def room_information(current_room):
         print(f'\n| There are no items in {current_room.name}.')
     else:
         print('\n| There is an item in this room!\n|--', *current_room.items)
+
 
 def player_choice():
     while True:
@@ -195,6 +192,11 @@ def game_over():
     print('Goodbye.\n')
     t.sleep(3)
 
+    print('\n-------------------------------------------------------------------')
+    print(f'{'You lost the game':^67}')
+    print('-------------------------------------------------------------------\n')
+    t.sleep(1)
+
 # asks user if they want to play again
 def play_again():
     answer = input('Play again? Y/N: ').strip().lower()
@@ -207,8 +209,7 @@ def play_again():
         quit()
 
     return rooms['Lobby']
-
-#FIXME: implement 
+ 
 def item_action(room, item):
     while True:
         if not room.items:
@@ -239,31 +240,32 @@ def item_action(room, item):
             print('Please enter a valid command.')
             continue
 
-# main game function:
-# -- will display room information
-# -- moves user based on user input
-# -- decides if game is won or lost
-# -- checks for villain
+# main game function
 def main():
     # initializing variables
+    item_list = ['BLUEPRINTS', 'MANIFESTO', 'MITM', 'FINANCE REPORTS', 'ROLODEX', 'KEY CARD']
     current_room = rooms['Lobby']
     inventory = []
 
-   # intro_to_game() # outputs intro to user
-    instructions()
+    # output game info to user
+    intro_to_game()
+    instructions(item_list)
 
     # main loop, will execute infinitely until user exits, loses, or wins
     while True:
+        # boolean to check with each loop to see if user has all required items
+        isAllItems = all(item in inventory for item in item_list)
+
         if current_room == rooms['CEO Suite']: # checks if user is in room w/ villain
             game_over()
             current_room = play_again()
+            inventory = []
             continue
-        elif len(inventory) == 7:
+        if isAllItems == True:
+            #FIXME: make this prettier
             print('You win!')
             quit()
         
-        #FIXME: add win check system
-
         room_information(current_room)
         t.sleep(0.8)
 
