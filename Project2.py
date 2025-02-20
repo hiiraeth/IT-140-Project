@@ -1,5 +1,3 @@
-#TODO: clean up comments, update and add them as needed
-
 import time as t
 import keyboard as kb
 
@@ -106,11 +104,11 @@ def instructions(list):
 # displays users inventory
 def show_items(items):
     if not items:
-        print('| Your inventory is empty.')
-        return
+        print('\n| Your inventory is empty.')
+        return # exits function if inventory is empty
 
     print('\n| Your current items are:')
-    for item in items:
+    for item in items: # prints out items user currently has in inventory
         print(f'|-- {item}')
 
 # displays info about room user is currently in to user, such as connections to other rooms
@@ -127,12 +125,14 @@ def room_information(current_room):
         i += 1
     
     t.sleep(0.8)
+
+    # checks to see if the current room has an item
     if current_room.items is None or not current_room.items:
         print(f'\n| There are no items in {current_room.name}.')
     else:
         print('\n| There is an item in this room!\n|--', *current_room.items)
 
-
+# allows user to make a decision; whether to use the move action, or item action
 def player_choice():
     while True:
         choice = str(input('\n| What would you like to do? Enter \'M\' to move rooms or '
@@ -147,18 +147,20 @@ def player_choice():
             print('Please enter a valid command.')
             continue
 
+# lets user move between rooms
 def move_action(current_room):
     while True:
         print('| Please make your selection by typing the direction:', end=' ')
         direction = str(input().strip().capitalize())
 
-        if direction == 'exit':
+        if direction == 'Exit':
             quit()
             print('\nThanks for playing! :)')
 
+        # validates the direction variable
         if direction in current_room.directions:
             new_room = current_room.directions[direction]
-            if new_room not in rooms:
+            if new_room not in rooms: # in case some type of critical error occurs
                 print('Uh oh, that room does not exist.')
                 continue
             break
@@ -172,7 +174,7 @@ def move_action(current_room):
     print('-------------------------------------------------------------------\n')
     t.sleep(2)
 
-    return rooms[new_room]
+    return rooms[new_room] # returns the room that user chose to move to
 
 # displays game over sequence
 def game_over():
@@ -197,20 +199,39 @@ def game_over():
     print('-------------------------------------------------------------------\n')
     t.sleep(1)
 
+# displays game winning sequence
+def game_win():
+    print('\n-------------------------------------------------------------------')
+    print(f'{'Congratulations!!':^67}')
+    print('-------------------------------------------------------------------\n')     
+
+    t.sleep(2)
+    print('You won the game!')
+    t.sleep(1)
+
+    print('I hope you enjoyed playing it.')
+    t.sleep(2)
+
+    print('Goodbye for now!')
+    t.sleep(2)
+
+
 # asks user if they want to play again
 def play_again():
     answer = input('Play again? Y/N: ').strip().lower()
 
     if answer == 'y': # restarts from the intro
         intro_to_game()
-        #FIXME: reset inventory and items once implemented
     else:
         print('\nThanks for playing! :)')
         quit()
 
-    return rooms['Lobby']
- 
+    return rooms['Lobby'] # resets users room to starting room, the lobby
+                          # the inventory gets reset in the main game loop
+
+# allows user to pick up or ignore an item
 def item_action(room, item):
+    # loops until user enters a valid command
     while True:
         if not room.items:
             print('There are no items to pick up!')
@@ -228,7 +249,7 @@ def item_action(room, item):
             print(f'{f'{room.items[0]} has been added to your inventory.':^67}')
             print('-------------------------------------------------------------------\n')
             
-            room.remove_item(item)
+            room.remove_item(item) # removes the item from the room, so it cannot be picked up again
             return item
         elif choice == 'n':
             print(f'You did not pick up {room.items[0]}.')
@@ -262,16 +283,19 @@ def main():
             inventory = []
             continue
         if isAllItems == True:
-            #FIXME: make this prettier
-            print('You win!')
-            quit()
+            game_win()
+            play_again()
+            inventory = []
+            continue
         
+        # outputs current room info and users inventory to user
         room_information(current_room)
         t.sleep(0.8)
 
         show_items(inventory)
         t.sleep(0.8)
 
+        # validates choice variable
         while True:
             choice = player_choice()
 
